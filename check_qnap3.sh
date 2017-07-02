@@ -33,7 +33,13 @@ if [ ! "$#" == "5" ]; then
 	echo "hdstatus shows status & temp; volstatus check all vols and vols space; powerstatus check power supply"
         echo "<#> is 1-8 for hd, 1-5 for vol"
 	echo
-        echo " Example: ./check_qnap 127.0.0.1 public diskusage 80 95"
+        echo " Example for diskusage: ./check_qnap3.sh 127.0.0.1 public diskused 80 95"
+	echo
+	echo " Example for volstatus: ./check_qnap3.sh 127.0.0.1 public volstatus 15 10"
+	echo "                        critical and warning value are releted to free disk space"
+	echo
+	echo " Example for fans: ./check_qnap3.sh 127.0.0.1 public fans 2000 1900"
+	echo "                   critical and warning are minimum speed in rpm for fans"
 	echo
         exit 3
 fi
@@ -243,11 +249,11 @@ elif [ "$strpart" == "hd3temp" ]; then
             	echo "HDD3 temperatur to high!: "$OUTPUT
             	exit 2
     	else
-            	if [ $TEMPHD -le "$strCritical" ]; then
+            	if [ $TEMPHD -ge "$strCritical" ]; then
                     	echo "CRITICAL: "$OUTPUT
                     	exit 2
             	fi
-            	if [ $TEMPHD -le "$strWarning" ]; then
+            	if [ $TEMPHD -ge "$strWarning" ]; then
                     	echo "WARNING: "$OUTPUT
                     	exit 1
             	fi
