@@ -368,7 +368,7 @@ elif [ "$strpart" == "hd8temp" ]; then
 
 # Volume 1 Status----------------------------------------------------------------------------------------------------------------------------------------
 elif [ "$strpart" == "vol1status" ]; then
-    	Vol_Status=$(snmpget -v1 -c "$strCommunity" "$strHostname" 1.3.6.1.4.1.24681.1.2.17.1.6.1 | awk '{print $4}' | sed 's/^"\(.*\).$/\1/')
+       Vol_Status=$(snmpget -v1 -c "$strCommunity" "$strHostname" .1.3.6.1.4.1.24681.1.2.17.1.6.1 -Oqv | sed 's/"//g')
 
     	if [ "$Vol_Status" == "Ready" ]; then
             	echo OK: $Vol_Status
@@ -385,7 +385,7 @@ elif [ "$strpart" == "vol1status" ]; then
 
 # Volume 2 Status----------------------------------------------------------------------------------------------------------------------------------------
 elif [ "$strpart" == "vol2status" ]; then
-        Vol_Status=$(snmpget -v1 -c "$strCommunity" "$strHostname" 1.3.6.1.4.1.24681.1.2.17.1.6.2 | awk '{print $4}' | sed 's/^"\(.*\).$/\1/')
+    	Vol_Status=$(snmpget -v1 -c "$strCommunity" "$strHostname" .1.3.6.1.4.1.24681.1.2.17.1.6.2 -Oqv | sed 's/"//g')
 
         if [ "$Vol_Status" == "Ready" ]; then
                 echo OK: $Vol_Status
@@ -402,7 +402,7 @@ elif [ "$strpart" == "vol2status" ]; then
 
 # Volume 3 Status----------------------------------------------------------------------------------------------------------------------------------------
 elif [ "$strpart" == "vol3status" ]; then
-        Vol_Status=$(snmpget -v1 -c "$strCommunity" "$strHostname" 1.3.6.1.4.1.24681.1.2.17.1.6.3 | awk '{print $4}' | sed 's/^"\(.*\).$/\1/')
+    	Vol_Status=$(snmpget -v1 -c "$strCommunity" "$strHostname" .1.3.6.1.4.1.24681.1.2.17.1.6.3 -Oqv | sed 's/"//g')
 
         if [ "$Vol_Status" == "Ready" ]; then
                 echo OK: $Vol_Status
@@ -419,7 +419,7 @@ elif [ "$strpart" == "vol3status" ]; then
 
 # Volume 4 Status----------------------------------------------------------------------------------------------------------------------------------------
 elif [ "$strpart" == "vol4status" ]; then
-        Vol_Status=$(snmpget -v1 -c "$strCommunity" "$strHostname" 1.3.6.1.4.1.24681.1.2.17.1.6.4 | awk '{print $4}' | sed 's/^"\(.*\).$/\1/')
+    	Vol_Status=$(snmpget -v1 -c "$strCommunity" "$strHostname" .1.3.6.1.4.1.24681.1.2.17.1.6.4 -Oqv | sed 's/"//g')
 
         if [ "$Vol_Status" == "Ready" ]; then
                 echo OK: $Vol_Status
@@ -436,7 +436,7 @@ elif [ "$strpart" == "vol4status" ]; then
 
 # Volume 5 Status----------------------------------------------------------------------------------------------------------------------------------------
 elif [ "$strpart" == "vol5status" ]; then
-        Vol_Status=$(snmpget -v1 -c "$strCommunity" "$strHostname" 1.3.6.1.4.1.24681.1.2.17.1.6.5 | awk '{print $4}' | sed 's/^"\(.*\).$/\1/')
+    	Vol_Status=$(snmpget -v1 -c "$strCommunity" "$strHostname" .1.3.6.1.4.1.24681.1.2.17.1.6.5 -Oqv | sed 's/"//g')
 
         if [ "$Vol_Status" == "Ready" ]; then
                 echo OK: $Vol_Status
@@ -583,7 +583,7 @@ elif [ "$strpart" == "volstatus" ]; then
      VOLCOUNT=$(snmpget -v1 -c "$strCommunity" "$strHostname" .1.3.6.1.4.1.24681.1.2.16.0 | awk '{print $4}')
 
      while [ "$VOL" -le "$VOLCOUNT" ]; do
-        Vol_Status=$(snmpget -v1 -c "$strCommunity" "$strHostname" .1.3.6.1.4.1.24681.1.2.17.1.6.$VOL | awk '{print $4}' | sed 's/^"\(.*\).$/\1/')
+        Vol_Status=$(snmpget -v1 -c "$strCommunity" "$strHostname" .1.3.6.1.4.1.24681.1.2.17.1.6.$VOL -Oqv | sed 's/"//g')
 
         if [ "$Vol_Status" == "Ready" ]; then
                 VOLSTAT="OK: $Vol_Status"
@@ -758,9 +758,22 @@ elif [ "$strpart" == "sysinfo" ]; then
 	VOLCOUNT=$(snmpget -v1 -c "$strCommunity" "$strHostname" .1.3.6.1.4.1.24681.1.2.16.0 | awk '{print $4}')
 	name=$(snmpget -v1 -c "$strCommunity" "$strHostname"  .1.3.6.1.4.1.24681.1.2.13.0  | awk '{print $4}' | sed 's/^"\(.*\)$/\1/')
 	firmware=$(snmpget -v1 -c "$strCommunity" "$strHostname"  .1.3.6.1.2.1.47.1.1.1.1.9.1 | awk '{print $4}' | sed 's/^"\(.*\)$/\1/')
+	generalstatus=$(snmpget -v1 -c "$strCommunity" "$strHostname"  .1.3.6.1.4.1.24681.1.4.1.1.1.2.1.2.1.5.1 -Oqv | sed 's/"//g')
 
-	echo NAS $name Model $model, Firmware $firmware, Max HD number $hdnum, No. Volume $VOLCOUNT
-	exit 0
+
+	echo NAS $name Model $model: $generalstatus, Firmware $firmware, Max HD number $hdnum, No. Volume $VOLCOUNT
+
+	if [ "$generalstatus" != "Ready" ]; then
+             WARNING=1
+	fi
+
+    if [ $CRITICAL -eq 1 ]; then
+        exit 2
+     elif [ $WARNING -eq 1 ]; then
+        exit 1
+     else
+        exit 0
+     fi
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 else
